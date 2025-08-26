@@ -1,15 +1,13 @@
 package main
 
 import (
-	"log"
-
 	"go-web/internal/routes"
+	"log"
 )
 
 func main() {
 	// 设置路由
 	router := routes.SetupRoutes()
-
 	// 启动服务器，监听8080端口
 	log.Println("服务器启动中，监听端口 :8080")
 	log.Println("访问 http://localhost:8080/api/ping 测试服务")
