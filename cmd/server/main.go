@@ -1,11 +1,14 @@
 package main
 
 import (
+	"go-web/internal/config"
 	"go-web/internal/routes"
 	"log"
 )
 
 func main() {
+	// 加载 .env（若存在）
+	config.LoadEnv()
 	// 设置路由
 	router := routes.SetupRoutes()
 	// 启动服务器，监听8080端口

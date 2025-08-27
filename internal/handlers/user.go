@@ -11,26 +11,21 @@ import (
 
 // UserHandler 用户处理器结构体，包含所有用户相关的处理方法
 type UserHandler struct {
-	users  []models.User // 内存中存储用户数据（实际项目中会使用数据库）
-	nextID int           // 下一个用户ID
+	repo UserRepository // 数据访问仓储
 }
 
 // NewUserHandler 创建并返回一个新的用户处理器实例
-func NewUserHandler() *UserHandler {
-	return &UserHandler{
-		users:  make([]models.User, 0), // 初始化空的用户切片
-		nextID: 1,                      // 从ID 1开始
-	}
-}
+func NewUserHandler(repo UserRepository) *UserHandler { return &UserHandler{repo: repo} }
 
 // GetUsers 处理GET /users请求，返回所有用户列表
 func (h *UserHandler) GetUsers(c *gin.Context) {
 	// 创建统一响应格式
-	response := models.Response{
-		Code:    200,
-		Message: "获取用户列表成功",
-		Data:    h.users,
+	users, err := h.repo.List()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{Code: 500, Message: "查询用户失败: " + err.Error()})
+		return
 	}
+	response := models.Response{Code: 200, Message: "获取用户列表成功", Data: users}
 
 	// 返回JSON响应
 	c.JSON(http.StatusOK, response)
@@ -53,16 +48,10 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	}
 
 	// 查找用户
-	for _, user := range h.users {
-		if user.ID == id {
-			response := models.Response{
-				Code:    200,
-				Message: "获取用户成功",
-				Data:    user,
-			}
-			c.JSON(http.StatusOK, response)
-			return
-		}
+	user, err := h.repo.GetByID(uint(id))
+	if err == nil && user != nil {
+		c.JSON(http.StatusOK, models.Response{Code: 200, Message: "获取用户成功", Data: user})
+		return
 	}
 
 	// 用户不存在
@@ -90,23 +79,12 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	// 创建新用户
-	newUser := models.User{
-		ID:    h.nextID,
-		Name:  req.Name,
-		Email: req.Email,
+	newUser := models.User{Name: req.Name, Email: req.Email}
+	if err := h.repo.Create(&newUser); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Response{Code: 500, Message: "创建用户失败: " + err.Error()})
+		return
 	}
-
-	// 将用户添加到内存存储中
-	h.users = append(h.users, newUser)
-	h.nextID++ // 递增ID
-
-	// 返回创建成功的响应
-	response := models.Response{
-		Code:    201,
-		Message: "用户创建成功",
-		Data:    newUser,
-	}
-	c.JSON(http.StatusCreated, response)
+	c.JSON(http.StatusCreated, models.Response{Code: 201, Message: "用户创建成功", Data: newUser})
 }
 
 // Ping 处理GET /ping请求，用于健康检查

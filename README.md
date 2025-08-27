@@ -26,7 +26,9 @@ go-web/
 - ✅ 支持 GET 和 POST 请求
 - ✅ 返回 JSON 格式数据
 - ✅ 统一的响应格式
-- ✅ 参数验证
+  │ ├── db/
+  │ │ └── mysql.go # MySQL 初始化
+  │ └── routes/
 - ✅ 错误处理
 
 ## API 接口
@@ -39,12 +41,32 @@ go-web/
 ### 2. 获取所有用户
 
 - **GET** `/api/users`
-- 响应: 返回用户列表
+
+4. 创建数据库并配置环境变量：
+
+```bash
+# 创建数据库（确保你已登录MySQL）
+CREATE DATABASE go_web DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# 可复制 .env.example 到 .env 并根据需要修改
+cp .env.example .env
+
+# 或者在shell中导出变量（示例）
+export DB_HOST=127.0.0.1
+export DB_PORT=3306
+export DB_USER=root
+export DB_PASS=你的密码
+export DB_NAME=go_web
+```
+
+5. 运行服务：
 
 ### 3. 根据 ID 获取用户
 
 - **GET** `/api/users/:id`
-- 参数: `id` (路径参数)
+
+6. 服务将在 `http://localhost:8080` 启动（首次会自动迁移 users 表）
+
 - 响应: 返回指定用户信息
 
 ### 4. 创建新用户
