@@ -13,5 +13,7 @@ func LoadEnv() {
 		log.Println("未发现 .env 文件，跳过加载（可用环境变量配置数据库）")
 	} else {
 		log.Println("已加载 .env 环境变量")
+		// 打印加载的环境变量（调试用，生产可注释掉）
+
 	}
 }
